@@ -884,16 +884,37 @@ function caesarCipher(text, shift) {
 }
 
 function vigenereCipher(text, key, decode) {
-  const cleanKey = key.toUpperCase().replace(/[^A-Z]/g, '') || 'KEY';
+  const cleanKey = key.toUpperCase().replace(/[^A-ZА-ЯЁ]/gi, '') || 'KEY';
+  const ruUpper = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ';
+  const ruLower = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя';
   let ki = 0;
+
+  // Получить числовой сдвиг из символа ключа
+  function keyShift(keyChar) {
+    const kc = keyChar.toUpperCase();
+    if (/[A-Z]/.test(kc)) return kc.charCodeAt(0) - 65;
+    const ri = ruUpper.indexOf(kc);
+    if (ri !== -1) return ri;
+    return 0;
+  }
+
   return text.split('').map(ch => {
     if (/[A-Za-z]/.test(ch)) {
       const base = ch >= 'a' ? 97 : 65;
-      const shift = decode
-        ? -(cleanKey.charCodeAt(ki % cleanKey.length) - 65)
-        : (cleanKey.charCodeAt(ki % cleanKey.length) - 65);
+      const s = keyShift(cleanKey[ki % cleanKey.length]);
+      const shift = decode ? -s : s;
       ki++;
       return String.fromCharCode(((ch.charCodeAt(0) - base + shift + 26) % 26) + base);
+    }
+    if (/[А-Яа-яёЁ]/.test(ch)) {
+      const isUpper = ruUpper.includes(ch);
+      const alpha = isUpper ? ruUpper : ruLower;
+      const idx = alpha.indexOf(ch);
+      if (idx === -1) return ch;
+      const s = keyShift(cleanKey[ki % cleanKey.length]);
+      const shift = decode ? -s : s;
+      ki++;
+      return alpha[((idx + shift) % alpha.length + alpha.length) % alpha.length];
     }
     return ch;
   }).join('');
@@ -911,10 +932,16 @@ function xorDecode(text, key) {
   let result = '';
   let i = 0;
   while (i < text.length) {
-    if (text.substr(i, 2) === '\\x' && i + 3 < text.length) {
+    if (text.substr(i, 2) === '\\x' && i + 4 <= text.length) {
       const hex = text.substr(i + 2, 2);
-      result += String.fromCharCode(parseInt(hex, 16) ^ key);
-      i += 4;
+      const parsed = parseInt(hex, 16);
+      if (!isNaN(parsed)) {
+        result += String.fromCharCode(parsed ^ key);
+        i += 4;
+      } else {
+        result += String.fromCharCode(text.charCodeAt(i) ^ key);
+        i++;
+      }
     } else {
       result += String.fromCharCode(text.charCodeAt(i) ^ key);
       i++;
