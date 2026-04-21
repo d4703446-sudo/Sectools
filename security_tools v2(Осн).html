@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SecTools — Инструменты информационной безопасности</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --accent: #00e5ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --danger: #ef4444;
+    --warn: #f59e0b;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --border: #1e293b;
+    --font-display: 'Syne', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* HEADER */
+  header {
+    padding: 48px 0 40px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 48px;
+  }
+
+  .header-tag {
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  header h1 {
+    font-family: var(--font-display);
+    font-size: clamp(36px, 6vw, 64px);
+    font-weight: 800;
+    line-height: 1;
+    background: linear-gradient(135deg, #fff 40%, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+  }
+
+  header p {
+    color: var(--muted);
+    font-size: 13px;
+    max-width: 480px;
+    line-height: 1.7;
+  }
+
+  /* NAV TABS */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 32px;
+    overflow-x: auto;
+  }
+
+  .tab {
+    flex: 1;
+    min-width: 120px;
+    padding: 10px 16px;
+    background: none;
+    border: none;
+    border-radius: 7px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  .tab:hover { color: var(--text); background: var(--surface2); }
+
+  .tab.active {
+    background: var(--surface2);
+    color: var(--accent);
+    border: 1px solid rgba(0,229,255,0.2);
+  }
+
+  /* SECTIONS */
+  .section { display: none; }
+  .section.active { display: block; animation: fadeIn 0.3s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+
+  .card-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .card-title span.ico {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    font-size: 16px;
+  }
+
+  /* FORM ELEMENTS */
+  label {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    margin-top: 16px;
+  }
+
+  label:first-child { margin-top: 0; }
+
+  input[type=text], input[type=number], textarea, select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    resize: vertical;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--accent);
+  }
+
+  textarea { min-height: 80px; }
+
+  select option { background: var(--surface); }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 16px;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+    font-weight: 700;
+  }
+
+  .btn-primary:hover { background: #33eaff; transform: translateY(-1px); }
+
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  .btn-danger {
+    background: rgba(239,68,68,0.15);
+    color: var(--danger);
+    border: 1px solid rgba(239,68,68,0.3);
+  }
+
+  .btn-danger:hover { background: rgba(239,68,68,0.25); }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  /* OUTPUT BOX */
+  .output {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13px;
+    word-break: break-all;
+    margin-top: 16px;
+    min-height: 44px;
+    position: relative;
+  }
+
+  .output-label {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .copy-btn {
+    position: absolute;
+    top: 8px; right: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* CHECKBOXES ROW */
+  .checks {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .check-item input[type=checkbox] {
+    width: 16px; height: 16px;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  /* STRENGTH BAR */
+  .strength-bar-wrap {
+    margin-top: 12px;
+  }
+
+  .strength-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+
+  .strength-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.4s, background 0.4s;
+    width: 0%;
+  }
+
+  .strength-label {
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  /* STRENGTH METER for checker */
+  .criteria-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .crit {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .crit-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    flex-shrink: 0;
+    transition: background 0.3s;
+  }
+
+  .crit.pass { color: var(--text); }
+  .crit.pass .crit-dot { background: var(--accent3); }
+
+  /* BRUTE TIME */
+  .brute-result {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .brute-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+  }
+
+  .brute-card .label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+  .brute-card .val { font-size: 18px; font-weight: 700; color: var(--accent); margin-top: 4px; }
+
+  /* RANGE */
+  input[type=range] {
+    width: 100%;
+    accent-color: var(--accent);
+    margin-top: 8px;
+    background: none;
+    border: none;
+    padding: 0;
+  }
+
+  /* CIPHER TABS */
+  .cipher-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+  }
+
+  .ctab {
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: none;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .ctab.active { background: var(--surface2); color: var(--accent); border-color: rgba(0,229,255,0.3); }
+
+  /* CONVERTER TABLE */
+  .conv-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .conv-row {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+
+  .conv-row .sys { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+  .conv-row .val { font-size: 16px; font-weight: 700; color: var(--accent); word-break: break-all; }
+
+  /* INFO BOX */
+  .info {
+    background: rgba(0,229,255,0.04);
+    border: 1px solid rgba(0,229,255,0.15);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-top: 16px;
+  }
+
+  .info strong { color: var(--accent); }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    margin-top: 60px;
+    padding-top: 24px;
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.8;
+  }
+
+  footer span { color: var(--accent); }
+
+  /* RANGE VALUE */
+  .range-val {
+    display: inline-block;
+    min-width: 30px;
+    text-align: right;
+    color: var(--accent);
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="header-tag">// made by den_4chi</div>
+    <h1>SecTools</h1>
+    <p>Набор инструментов для изучения основ информационной безопасности: генерация паролей, шифрование текста, анализ надёжности и конвертация систем счисления.</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('gen')">🔑 Генератор паролей</button>
+    <button class="tab" onclick="switchTab('check')">🛡 Анализ пароля</button>
+    <button class="tab" onclick="switchTab('cipher')">🔒 Шифрование</button>
+    <button class="tab" onclick="switchTab('conv')">🔢 Конвертер СС</button>
+  </div>
+
+  <!-- === 1. PASSWORD GENERATOR === -->
+  <div id="sec-gen" class="section active">
+    <div class="card">
+      <div class="card-title">
+        <span class="ico" style="background:rgba(0,229,255,0.1);">🔑</span>
+        Генератор паролей
+      </div>
+
+      <label>Длина пароля: <span class="range-val" id="len-val">16</span></label>
+      <input type="range" min="6" max="64" value="16" id="pass-len" oninput="document.getElementById('len-val').textContent=this.value">
+
+      <label>Набор символов</label>
+      <div class="checks">
+        <label class="check-item"><input type="checkbox" id="ch-upper" checked> A–Z (верхний регистр)</label>
+        <label class="check-item"><input type="checkbox" id="ch-lower" checked> a–z (нижний регистр)</label>
+        <label class="check-item"><input type="checkbox" id="ch-digits" checked> 0–9 (цифры)</label>
+        <label class="check-item"><input type="checkbox" id="ch-spec" checked> !@#$% (спецсимволы)</label>
+      </div>
+
+      <label>Количество паролей</label>
+      <input type="number" id="pass-count" value="1" min="1" max="20" style="width:120px">
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="generatePasswords()">Сгенерировать</button>
+        <button class="btn btn-secondary" onclick="copyOutput('gen-output')">Копировать</button>
+      </div>
+
+      <div class="output-label" style="margin-top:20px">Результат</div>
+      <div class="output" id="gen-output" style="white-space:pre-wrap; line-height:1.9">—</div>
+
+      <div class="strength-bar-wrap" id="gen-strength-wrap" style="display:none">
+        <div class="strength-bar"><div class="strength-fill" id="gen-sfill"></div></div>
+        <div class="strength-label" id="gen-slabel"></div>
+      </div>
+
+      <div class="info">
+        <strong>Как это работает:</strong> генератор формирует случайный пароль из выбранного набора символов с помощью <strong>window.crypto.getRandomValues()</strong> — криптографически стойкого генератора случайных чисел браузера.
+      </div>
+    </div>
+  </div>
+
+  <!-- === 2. PASSWORD CHECKER === -->
+  <div id="sec-check" class="section">
+    <div class="card">
+      <div class="card-title">
+        <span class="ico" style="background:rgba(124,58,237,0.15);">🛡</span>
+        Анализ надёжности пароля
+      </div>
+
+      <label>Введите пароль</label>
+      <input type="text" id="check-input" placeholder="Введите пароль для анализа..." oninput="analyzePassword()">
+
+      <div class="strength-bar-wrap" style="margin-top:16px">
+        <div class="strength-bar"><div class="strength-fill" id="check-sfill"></div></div>
+        <div class="strength-label" id="check-slabel" style="margin-top:6px; color:var(--muted)">Введите пароль</div>
+      </div>
+
+      <div class="criteria-list">
+        <div class="crit" id="cr-len"><div class="crit-dot"></div>Минимум 8 символов</div>
+        <div class="crit" id="cr-upper"><div class="crit-dot"></div>Верхний регистр (A–Z)</div>
+        <div class="crit" id="cr-lower"><div class="crit-dot"></div>Нижний регистр (a–z)</div>
+        <div class="crit" id="cr-digit"><div class="crit-dot"></div>Цифры (0–9)</div>
+        <div class="crit" id="cr-spec"><div class="crit-dot"></div>Спецсимволы (!@#...)</div>
+        <div class="crit" id="cr-long"><div class="crit-dot"></div>Длина 16+ символов</div>
+      </div>
+
+      <div class="output-label" style="margin-top:20px">Время перебора (brute-force)</div>
+      <div class="brute-result">
+        <div class="brute-card"><div class="label">Алфавит</div><div class="val" id="br-alpha">—</div></div>
+        <div class="brute-card"><div class="label">Комбинаций</div><div class="val" id="br-comb">—</div></div>
+        <div class="brute-card"><div class="label">При 10⁹ попыток/с</div><div class="val" id="br-time">—</div></div>
+        <div class="brute-card"><div class="label">При 10¹² попыток/с</div><div class="val" id="br-fast">—</div></div>
+      </div>
+
+      <div class="info">
+        <strong>Формула:</strong> время взлома = N<sup>L</sup> / скорость, где N — размер алфавита, L — длина пароля. Современные GPU перебирают до <strong>10¹²</strong> хэшей в секунду для простых алгоритмов.
+      </div>
+    </div>
+  </div>
+
+  <!-- === 3. CIPHER === -->
+  <div id="sec-cipher" class="section">
+    <div class="card">
+      <div class="card-title">
+        <span class="ico" style="background:rgba(16,185,129,0.1);">🔒</span>
+        Шифрование текста
+      </div>
+
+      <div class="cipher-tabs">
+        <button class="ctab active" onclick="setCipher('caesar', this)">Шифр Цезаря</button>
+        <button class="ctab" onclick="setCipher('vigenere', this)">Шифр Виженера</button>
+        <button class="ctab" onclick="setCipher('xor', this)">XOR-шифр</button>
+        <button class="ctab" onclick="setCipher('base64', this)">Base64</button>
+      </div>
+
+      <!-- Caesar -->
+      <div id="c-caesar">
+        <label>Сдвиг (ключ): <span class="range-val" id="caes-val">3</span></label>
+        <input type="range" min="1" max="25" value="3" id="caes-shift" oninput="document.getElementById('caes-val').textContent=this.value">
+      </div>
+
+      <!-- Vigenere -->
+      <div id="c-vigenere" style="display:none">
+        <label>Ключевое слово</label>
+        <input type="text" id="vig-key" placeholder="Например: SECRET" oninput="doCipher()">
+      </div>
+
+      <!-- XOR -->
+      <div id="c-xor" style="display:none">
+        <label>XOR-ключ (число 1–255)</label>
+        <input type="number" id="xor-key" value="42" min="1" max="255" style="width:140px" oninput="doCipher()">
+      </div>
+
+      <!-- Base64: no key -->
+      <div id="c-base64" style="display:none">
+        <div class="info" style="margin-top:0">Base64 — кодирование, не шифрование. Ключ не используется.</div>
+      </div>
+
+      <label>Исходный текст</label>
+      <textarea id="cipher-input" placeholder="Введите текст для шифрования..." oninput="doCipher()"></textarea>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="doCipher()">Зашифровать</button>
+        <button class="btn btn-secondary" onclick="doCipherDecode()">Расшифровать</button>
+        <button class="btn btn-secondary" onclick="copyOutput('cipher-output')">Копировать</button>
+      </div>
+
+      <div class="output-label" style="margin-top:20px">Результат</div>
+      <div class="output" id="cipher-output" style="word-break:break-all">—</div>
+
+      <div class="info" id="cipher-info">
+        <strong>Шифр Цезаря</strong> — один из древнейших шифров подстановки. Каждая буква сдвигается на фиксированное число позиций в алфавите. Ключ — число сдвига.
+      </div>
+    </div>
+  </div>
+
+  <!-- === 4. CONVERTER === -->
+  <div id="sec-conv" class="section">
+    <div class="card">
+      <div class="card-title">
+        <span class="ico" style="background:rgba(245,158,11,0.1);">🔢</span>
+        Конвертер систем счисления
+      </div>
+
+      <label>Исходная система счисления</label>
+      <select id="conv-from">
+        <option value="10">Десятичная (10)</option>
+        <option value="2">Двоичная (2)</option>
+        <option value="8">Восьмеричная (8)</option>
+        <option value="16">Шестнадцатеричная (16)</option>
+      </select>
+
+      <label>Введите число</label>
+      <input type="text" id="conv-input" placeholder="Например: 255" oninput="doConvert()">
+
+      <div style="margin-top:20px">
+        <div class="output-label">Результаты перевода</div>
+        <div class="conv-grid">
+          <div class="conv-row"><div class="sys">Десятичная (base 10)</div><div class="val" id="cv-10">—</div></div>
+          <div class="conv-row"><div class="sys">Двоичная (base 2)</div><div class="val" id="cv-2">—</div></div>
+          <div class="conv-row"><div class="sys">Восьмеричная (base 8)</div><div class="val" id="cv-8">—</div></div>
+          <div class="conv-row"><div class="sys">Шестнадцатеричная (base 16)</div><div class="val" id="cv-16">—</div></div>
+        </div>
+      </div>
+
+      <label style="margin-top:20px">Таблица ASCII (первые 128 символов)</label>
+      <div class="info">
+        Введите число в диапазоне 32–126, чтобы увидеть соответствующий <strong>ASCII-символ</strong>:
+        <span id="ascii-out" style="color:var(--accent); font-size:24px; margin-left:12px; vertical-align:middle">—</span>
+      </div>
+
+      <div class="info" style="margin-top:12px">
+        <strong>Зачем это нужно:</strong> Все данные в компьютере хранятся в двоичной системе. Шестнадцатеричная используется в адресах памяти, цветах (#FF0000), MAC-адресах. Перевод — базовый навык программиста.
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div>SecTools · Инструменты информационной безопасности</div>
+    <div>Open project by den_4chi · <span>Secure your information</span></div>
+    <div style="margin-top:8px; font-size:10px">Все вычисления выполняются локально в браузере. Данные не передаются на сервер.</div>
+  </footer>
+
+</div>
+
+<script>
+// === TAB SWITCHER ===
+function switchTab(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// === COPY ===
+function copyOutput(id) {
+  const el = document.getElementById(id);
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    const orig = el.style.borderColor;
+    el.style.borderColor = 'var(--accent3)';
+    setTimeout(() => el.style.borderColor = orig, 800);
+  });
+}
+
+// === PASSWORD GENERATOR ===
+function generatePasswords() {
+  const len = parseInt(document.getElementById('pass-len').value);
+  const count = Math.min(20, parseInt(document.getElementById('pass-count').value) || 1);
+  const upper = document.getElementById('ch-upper').checked;
+  const lower = document.getElementById('ch-lower').checked;
+  const digits = document.getElementById('ch-digits').checked;
+  const spec = document.getElementById('ch-spec').checked;
+
+  let chars = '';
+  if (upper) chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  if (lower) chars += 'abcdefghijklmnopqrstuvwxyz';
+  if (digits) chars += '0123456789';
+  if (spec) chars += '!@#$%^&*()_+-=[]{}|;:,.<>?';
+
+  if (!chars) { document.getElementById('gen-output').textContent = '⚠ Выберите хотя бы один набор символов'; return; }
+
+  const passwords = [];
+  for (let p = 0; p < count; p++) {
+    let pass = '';
+    const arr = new Uint32Array(len);
+    crypto.getRandomValues(arr);
+    for (let i = 0; i < len; i++) {
+      pass += chars[arr[i] % chars.length];
+    }
+    passwords.push(pass);
+  }
+
+  document.getElementById('gen-output').textContent = passwords.join('\n');
+
+  // Show strength of first password
+  const wrap = document.getElementById('gen-strength-wrap');
+  wrap.style.display = 'block';
+  const { score, label, color } = strengthScore(passwords[0]);
+  const fill = document.getElementById('gen-sfill');
+  fill.style.width = (score * 25) + '%';
+  fill.style.background = color;
+  document.getElementById('gen-slabel').textContent = 'Надёжность: ' + label;
+  document.getElementById('gen-slabel').style.color = color;
+}
+
+// === PASSWORD ANALYZER ===
+function analyzePassword() {
+  const pass = document.getElementById('check-input').value;
+  if (!pass) {
+    document.getElementById('check-sfill').style.width = '0%';
+    document.getElementById('check-slabel').textContent = 'Введите пароль';
+    ['cr-len','cr-upper','cr-lower','cr-digit','cr-spec','cr-long'].forEach(id => {
+      const el = document.getElementById(id); el.classList.remove('pass');
+    });
+    ['br-alpha','br-comb','br-time','br-fast'].forEach(id => document.getElementById(id).textContent = '—');
+    return;
+  }
+
+  const crits = {
+    'cr-len': pass.length >= 8,
+    'cr-upper': /[A-Z]/.test(pass),
+    'cr-lower': /[a-z]/.test(pass),
+    'cr-digit': /[0-9]/.test(pass),
+    'cr-spec': /[^A-Za-z0-9]/.test(pass),
+    'cr-long': pass.length >= 16,
+  };
+
+  for (const [id, val] of Object.entries(crits)) {
+    const el = document.getElementById(id);
+    el.classList.toggle('pass', val);
+  }
+
+  const { score, label, color } = strengthScore(pass);
+  document.getElementById('check-sfill').style.width = (score * 25) + '%';
+  document.getElementById('check-sfill').style.background = color;
+  document.getElementById('check-slabel').textContent = label;
+  document.getElementById('check-slabel').style.color = color;
+
+  // Brute force
+  let alpha = 0;
+  if (/[a-z]/.test(pass)) alpha += 26;
+  if (/[A-Z]/.test(pass)) alpha += 26;
+  if (/[0-9]/.test(pass)) alpha += 10;
+  if (/[^A-Za-z0-9]/.test(pass)) alpha += 32;
+  if (alpha === 0) alpha = 26;
+
+  const L = pass.length;
+  document.getElementById('br-alpha').textContent = alpha;
+
+  const logComb = L * Math.log10(alpha);
+  let combStr = '';
+  if (logComb > 15) combStr = '10^' + Math.round(logComb);
+  else combStr = Math.round(Math.pow(10, logComb)).toLocaleString();
+  document.getElementById('br-comb').textContent = combStr;
+
+  const logTime9 = logComb - 9;
+  document.getElementById('br-time').textContent = formatTime(logTime9);
+  const logTime12 = logComb - 12;
+  document.getElementById('br-fast').textContent = formatTime(logTime12);
+}
+
+function formatTime(logSec) {
+  if (logSec < 0) return '< 1 сек';
+  if (logSec < Math.log10(60)) return Math.round(Math.pow(10,logSec)) + ' сек';
+  if (logSec < Math.log10(3600)) return Math.round(Math.pow(10,logSec-Math.log10(60))) + ' мин';
+  if (logSec < Math.log10(86400)) return Math.round(Math.pow(10,logSec-Math.log10(3600))) + ' ч';
+  if (logSec < Math.log10(86400*365)) return Math.round(Math.pow(10,logSec-Math.log10(86400))) + ' дн';
+  const logYears = logSec - Math.log10(86400*365);
+  if (logYears > 12) return '10^' + Math.round(logYears) + ' лет';
+  return Math.round(Math.pow(10,logYears)).toLocaleString() + ' лет';
+}
+
+function strengthScore(pass) {
+  let score = 0;
+  if (pass.length >= 8) score++;
+  if (pass.length >= 12) score++;
+  if (pass.length >= 16) score++;
+  if (/[A-Z]/.test(pass) && /[a-z]/.test(pass)) score++;
+  if (/[0-9]/.test(pass)) score++;
+  if (/[^A-Za-z0-9]/.test(pass)) score++;
+  
+  // Базовая проверка на частые паттерны (словарная атака)
+  const lowerPass = pass.toLowerCase();
+  if (/(12345|qwerty|password|admin|йцукен|1111)/.test(lowerPass)) score -= 2;
+  if (/^[0-9]+$/.test(pass) || /^[a-z]+$/.test(lowerPass)) score -= 1; // только цифры или только буквы
+
+  score = Math.max(0, Math.min(4, Math.round(score * 4 / 6)));
+
+  const map = [
+    { label: 'Очень слабый (взломают мгновенно)', color: '#ef4444' },
+    { label: 'Слабый', color: '#f59e0b' },
+    { label: 'Средний', color: '#eab308' },
+    { label: 'Хороший', color: '#22c55e' },
+    { label: 'Отличный', color: '#00e5ff' },
+  ];
+  return { score, ...map[score] };
+}
+
+// === CIPHER ===
+let currentCipher = 'caesar';
+const cipherInfos = {
+  caesar: '<strong>Шифр Цезаря</strong> — один из древнейших шифров подстановки. Каждая буква сдвигается на фиксированное число позиций в алфавите. Ключ — число сдвига.',
+  vigenere: '<strong>Шифр Виженера</strong> — полиалфавитный шифр. Каждая буква шифруется с разным сдвигом, определяемым символом ключевого слова. Устойчивее шифра Цезаря.',
+  xor: '<strong>XOR-шифр</strong> — каждый байт текста складывается по модулю 2 с ключом. Один из базовых алгоритмов, лежащих в основе современного шифрования.',
+  base64: '<strong>Base64</strong> — кодирование бинарных данных в ASCII-строку. Не является шифрованием: любой может декодировать без ключа. Используется для передачи данных.'
+};
+
+function setCipher(name, btn) {
+  currentCipher = name;
+  document.querySelectorAll('.ctab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  ['c-caesar','c-vigenere','c-xor','c-base64'].forEach(id => document.getElementById(id).style.display = 'none');
+  document.getElementById('c-' + name).style.display = 'block';
+  document.getElementById('cipher-info').innerHTML = cipherInfos[name];
+  doCipher();
+}
+
+function doCipher(decode = false) {
+  const text = document.getElementById('cipher-input').value;
+  if (!text) { document.getElementById('cipher-output').textContent = '—'; return; }
+  let result = '';
+
+  if (currentCipher === 'caesar') {
+    let shift = parseInt(document.getElementById('caes-shift').value);
+    if (decode) shift = -shift;
+    result = caesarCipher(text, shift);
+  } else if (currentCipher === 'vigenere') {
+    const key = document.getElementById('vig-key').value || 'KEY';
+    result = vigenereCipher(text, key, decode);
+  } else if (currentCipher === 'xor') {
+    const key = parseInt(document.getElementById('xor-key').value) || 42;
+    result = decode ? xorDecode(text, key) : xorCipher(text, key);
+  } else if (currentCipher === 'base64') {
+    try {
+      if (decode) {
+        const bytes = Uint8Array.from(atob(text), c => c.charCodeAt(0));
+        result = new TextDecoder().decode(bytes);
+      } else {
+        const bytes = new TextEncoder().encode(text);
+        result = btoa(String.fromCharCode(...bytes));
+      }
+    } catch(e) { result = '⚠ Ошибка: некорректный Base64'; }
+  }
+
+  document.getElementById('cipher-output').textContent = result;
+}
+
+function doCipherDecode() {
+  doCipher(true);
+}
+
+function caesarCipher(text, shift) {
+  return text.split('').map(ch => {
+    if (/[A-Za-z]/.test(ch)) {
+      const base = ch >= 'a' ? 97 : 65;
+      return String.fromCharCode(((ch.charCodeAt(0) - base + shift + 26) % 26) + base);
+    }
+    if (/[А-Яа-яёЁ]/.test(ch)) {
+      const ru = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя';
+      const upper = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ';
+      const lower = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя';
+      const isUpper = upper.includes(ch);
+      const alpha = isUpper ? upper : lower;
+      const idx = alpha.indexOf(ch);
+      if (idx === -1) return ch;
+      return alpha[((idx + shift) % alpha.length + alpha.length) % alpha.length];
+    }
+    return ch;
+  }).join('');
+}
+
+function vigenereCipher(text, key, decode) {
+  const cleanKey = key.toUpperCase().replace(/[^A-Z]/g, '') || 'KEY';
+  let ki = 0;
+  return text.split('').map(ch => {
+    if (/[A-Za-z]/.test(ch)) {
+      const base = ch >= 'a' ? 97 : 65;
+      const shift = decode
+        ? -(cleanKey.charCodeAt(ki % cleanKey.length) - 65)
+        : (cleanKey.charCodeAt(ki % cleanKey.length) - 65);
+      ki++;
+      return String.fromCharCode(((ch.charCodeAt(0) - base + shift + 26) % 26) + base);
+    }
+    return ch;
+  }).join('');
+}
+
+function xorCipher(text, key) {
+  return text.split('').map(ch => {
+    const code = ch.charCodeAt(0) ^ key;
+    if (code >= 32 && code < 127) return String.fromCharCode(code);
+    return '\\x' + code.toString(16).padStart(2, '0');
+  }).join('');
+}
+
+function xorDecode(text, key) {
+  let result = '';
+  let i = 0;
+  while (i < text.length) {
+    if (text.substr(i, 2) === '\\x' && i + 3 < text.length) {
+      const hex = text.substr(i + 2, 2);
+      result += String.fromCharCode(parseInt(hex, 16) ^ key);
+      i += 4;
+    } else {
+      result += String.fromCharCode(text.charCodeAt(i) ^ key);
+      i++;
+    }
+  }
+  return result;
+}
+
+// === CONVERTER ===
+function doConvert() {
+  const fromBase = parseInt(document.getElementById('conv-from').value);
+  const input = document.getElementById('conv-input').value.trim();
+  if (!input) {
+    ['cv-10','cv-2','cv-8','cv-16'].forEach(id => document.getElementById(id).textContent = '—');
+    document.getElementById('ascii-out').textContent = '—';
+    return;
+  }
+
+  // Строгая валидация ввода
+  const validators = {
+    2: /^[01]+$/,
+    8: /^[0-7]+$/,
+    10: /^[0-9]+$/,
+    16: /^[0-9A-Fa-f]+$/
+  };
+
+  if (!validators[fromBase].test(input)) {
+    ['cv-10','cv-2','cv-8','cv-16'].forEach(id => document.getElementById(id).textContent = '⚠ Недопустимые символы');
+    document.getElementById('ascii-out').textContent = '—';
+    return;
+  }
+
+  try {
+    const decimal = parseInt(input, fromBase);
+    if (isNaN(decimal)) throw new Error();
+
+    document.getElementById('cv-10').textContent = decimal.toString(10);
+    document.getElementById('cv-2').textContent = decimal.toString(2);
+    document.getElementById('cv-8').textContent = decimal.toString(8);
+    document.getElementById('cv-16').textContent = decimal.toString(16).toUpperCase();
+
+    if (decimal >= 32 && decimal <= 126) {
+      document.getElementById('ascii-out').textContent = String.fromCharCode(decimal);
+    } else {
+      document.getElementById('ascii-out').textContent = '—';
+    }
+  } catch(e) {
+    ['cv-10','cv-2','cv-8','cv-16'].forEach(id => document.getElementById(id).textContent = '⚠ Ошибка');
+  }
+}
+
+// Auto-trigger converter on base change
+document.getElementById('conv-from').addEventListener('change', doConvert);
+document.getElementById('caes-shift').addEventListener('input', doCipher);
+</script>
